@@ -1,5 +1,5 @@
 import math
-
+import matplotlib.pyplot as plt
 import numpy as np
 
 # k = 3
@@ -7,11 +7,16 @@ import numpy as np
 
 pi = 22 / 7
 
+colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
+
 
 class ExpectationMaximization:
 
-    def __init__(self, data):
+    def __init__(self, data, show_plots):
         self._data = data
+        self._which_cluster = []
+
+        self._show_plots = show_plots
 
         self._num_features = np.shape(self._data)[0]
         self._num_data_points = np.shape(self._data)[1]
@@ -83,3 +88,26 @@ class ExpectationMaximization:
         prob = pic * prob
         prob = self.normalize(prob)
         return prob
+
+    def hard_cluster(self):
+        self._which_cluster = np.amax(self._prob, axis=1)
+
+    def show_em_plots(self):
+        list_of_points = [ [] for _ in range(self._num_clusters)]
+
+        for points, which in zip(self._data.T, self._which_cluster):
+            list_of_points[which].append(points)
+
+        fig = plt.figure()
+
+        ax = fig.add_subplot(111)
+
+        cluster_index = 0
+
+        for cluster in list_of_points:
+            name = 'Cluster ' + cluster_index
+            ax.scatter(x=cluster[0], y=cluster[1], c=colors[cluster_index], label=name)
+            cluster_index += 1
+
+        plt.legend()
+        plt.show()
