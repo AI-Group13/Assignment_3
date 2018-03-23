@@ -49,7 +49,7 @@ class ExpectationMaximization:
             matrix[:, column] /= norm
         return matrix
 
-    def norm_pdf_multivariate(self, data, mu, sigma):
+    def norm_pdf_multivariate(self, mu, sigma):
         # for error referencing
         result = -99
 
@@ -63,7 +63,7 @@ class ExpectationMaximization:
 
                     norm_const = 1.0 / (np.power((2 * pi), float(size) / 2) * np.power(det, 1.0 / 2))
 
-                    x_mu = data[:, j] - mu[i]
+                    x_mu = self._data[:, j] - mu[i]
                     ainv = np.linalg.inv(sigma[i])
                     result = np.power(math.e, -0.5 * (x_mu.T * ainv * x_mu))
                     result = norm_const * result
@@ -96,7 +96,7 @@ class ExpectationMaximization:
         return pic, muc, sigma
 
     def expectation(self, mu, sigma, pic):
-        self._prob = self.norm_pdf_multivariate(mu, sigma, self._prob)
+        self._prob = self.norm_pdf_multivariate(mu, sigma)
         self._prob = pic * self._prob
         self._prob = self.normalize(self._prob)
 
