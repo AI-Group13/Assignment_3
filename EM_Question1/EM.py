@@ -25,15 +25,6 @@ class ExpectationMaximization:
 
         self._prob = np.array([0, 0], [0, 0])
 
-    def calculate_clusters(self, num_clusters=0):
-        if num_clusters is not 0:
-            self._prob = self.normalize(np.random.rand(num_clusters, self._num_data_points))
-
-            should_exit = False
-
-            while not should_exit:
-                pass
-
     def normalize(self, prob):
         for column in range(self._num_data_points):
             norm = sum(prob[:, column])
@@ -65,7 +56,7 @@ class ExpectationMaximization:
 
         return self._prob
 
-    def maximization(self):
+    def em_maximization(self):
         pic = np.mean(self._prob, axis=1)
         mu = 0
         sig = 0
