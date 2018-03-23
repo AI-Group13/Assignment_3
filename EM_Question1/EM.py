@@ -1,4 +1,5 @@
 import math
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -12,7 +13,7 @@ colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
 
 class ExpectationMaximization:
 
-    def __init__(self, data, show_plots):
+    def __init__(self, data, num_clusters, show_plots):
         self._data = data
         self._which_cluster = []
 
@@ -21,15 +22,32 @@ class ExpectationMaximization:
         self._num_features = np.shape(self._data)[0]
         self._num_data_points = np.shape(self._data)[1]
 
-        self._num_clusters = 0
+        self._num_clusters = int(num_clusters)
 
         self._prob = np.array([[0, 0], [0, 0]])
+        self._old_prob = self._prob
 
-    def normalize(self, prob):
+    def do_em(self):
+        self._prob = self.normalize(np.random.rand(self._num_clusters, self._num_data_points))
+
+        while True:
+
+            self._old_prob = self._prob
+
+            pic, muc, sigma = self.em_maximization()
+            self.expectation(muc, sigma, pic)
+
+            if self.prob_fitness_calc() > 50:
+                if self._show_plots:
+                    self.hard_cluster()
+                    self.show_em_plots()
+                break
+
+    def normalize(self, matrix):
         for column in range(self._num_data_points):
-            norm = sum(prob[:, column])
-            prob[:, column] /= norm
-        return prob
+            norm = sum(matrix[:, column])
+            matrix[:, column] /= norm
+        return matrix
 
     def norm_pdf_multivariate(self, data, mu, sigma):
         # for error referencing
@@ -60,6 +78,7 @@ class ExpectationMaximization:
         pic = np.mean(self._prob, axis=1)
         mu = 0
         sig = 0
+
         for i in range(self._num_clusters):
             for j in range(self._num_data_points):
                 mu += self._prob[i, j] * self._data[:, j]
@@ -68,23 +87,22 @@ class ExpectationMaximization:
 
         for i in range(self._num_clusters):
             for j in range(self._num_data_points):
-                sig += self._prob[i, j] * (self._data[:, j] - muc[i]).T * (self._data[:, j] - muc[i])
+                sig += self._prob[i, j] * ((self._data[:, j] - muc[i]).T * (self._data[:, j] - muc[i])
 
         sigma = sig / self._num_data_points
 
         return pic, muc, sigma
 
-    def expectation(self, mu, prob, sigma, pic):
-        prob = self.norm_pdf_multivariate(mu, sigma, prob)
-        prob = pic * prob
-        prob = self.normalize(prob)
-        return prob
+    def expectation(self, mu, sigma, pic):
+        self._prob = self.norm_pdf_multivariate(mu, sigma, self._prob)
+        self._prob = pic * self._prob
+        self._prob = self.normalize(self._prob)
 
     def hard_cluster(self):
         self._which_cluster = np.amax(self._prob, axis=1)
 
     def show_em_plots(self):
-        list_of_points = [ [] for _ in range(self._num_clusters)]
+        list_of_points = [[] for _ in range(self._num_clusters)]
 
         for points, which in zip(self._data.T, self._which_cluster):
             list_of_points[which].append(points)
@@ -102,3 +120,8 @@ class ExpectationMaximization:
 
         plt.legend()
         plt.show()
+
+    def prob_fitness_calc(self):
+        prob_diff = np.abs(self._old_prob) - np.abs(self._prob)
+
+        return prob_diff.mean()
