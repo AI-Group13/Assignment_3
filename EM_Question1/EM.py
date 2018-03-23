@@ -53,19 +53,19 @@ class ExpectationMaximization:
         # for error referencing
         result = -99
 
-        size = len(self._data)
+        size = self._num_features
         for i in range(self._num_clusters):
             for j in range(self._num_data_points):
-                if size == len(mu) and (size, size) == sigma[i].shape:
+                if (size, self._num_features) == mu.shape and (size, size) == sigma[i].shape:
                     det = np.linalg.det(sigma[i])
                     if det == 0:
                         raise NameError("The covariance matrix can't be singular")
 
                     norm_const = 1.0 / (np.power((2 * pi), float(size) / 2) * np.power(det, 1.0 / 2))
 
-                    x_mu = self._data[:, j] - mu[i]
-                    ainv = np.linalg.inv(sigma[i])
-                    result = np.power(math.e, -0.5 * (x_mu.T * ainv * x_mu))
+                    x_mu = np.matrix(self._data[:, j] - mu[:,i])
+                    ainv = np.matrix(np.linalg.inv(sigma[i]))
+                    result = np.power(math.e, -0.5 * (x_mu * ainv * x_mu.T))
                     result = norm_const * result
                     self._prob[i, j] = result
 
@@ -81,23 +81,33 @@ class ExpectationMaximization:
 
         for i in range(self._num_clusters):
             for j in range(self._num_data_points):
+
                 mu[:, i] += self._prob[i, j] * self._data[:, j]
 
         muc = mu / self._num_data_points
 
         for i in range(self._num_clusters):
             for j in range(self._num_data_points):
-                A = (self._data[:, j] - muc[:, i])
-                B = (self._data[:, j] - muc[:, i])
-                sig[i, :, :] += self._prob[i, j] * (A * B.T)
+                A = np.matrix(self._data[:, j] - muc[:, i])
+                B = np.matrix(self._data[:, j] - muc[:, i])
+                val = (A.T * B) * self._prob[i, j]
+                sig[i, :, :] += val
 
         sigma = sig / self._num_data_points
+
+        for mat in sigma:
+            if np.linalg.det(mat) == 0:
+                pass
 
         return pic, muc, sigma
 
     def expectation(self, mu, sigma, pic):
         self._prob = self.norm_pdf_multivariate(mu, sigma)
-        self._prob = pic * self._prob
+
+        for i in range(self._num_features):
+            self._prob[i, :] *= pic[i]
+
+        # self._prob = pic * self._prob
         self._prob = self.normalize(self._prob)
 
     def hard_cluster(self):
