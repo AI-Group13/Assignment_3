@@ -17,11 +17,10 @@ if __name__ == '__main__':
     data = genfromtxt(args['data_file'], delimiter=',').T
     show_plot = args['plot']
 
-    em = EM.ExpectationMaximization(data, show_plot)
+    em = EM.ExpectationMaximization(data, args['num_clusters'], show_plot)
 
     if args['num_clusters'] == 'X':
         # do EM Question 2
         pass
     else:
-        # do EM Question 1
-        pass
+        em.do_em()
