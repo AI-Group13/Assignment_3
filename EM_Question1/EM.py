@@ -75,9 +75,9 @@ class ExpectationMaximization:
         return self._prob
 
     def em_maximization(self):
-        pic = np.sum(self._prob, axis=1)/self._num_data_points
+        pic = np.sum(self._prob, axis=1) / self._num_data_points
         mu = np.zeros([self._num_features, self._num_clusters])
-        sig = np.zeros([self._num_clusters, self._num_clusters, self._num_clusters])
+        sig = np.zeros([self._num_clusters, self._num_features, self._num_features])
 
         for i in range(self._num_clusters):
             for j in range(self._num_data_points):
@@ -87,7 +87,9 @@ class ExpectationMaximization:
 
         for i in range(self._num_clusters):
             for j in range(self._num_data_points):
-                sig[:, i] += self._prob[i, j] * ((self._data[:, j] - muc[:, i]).T * (self._data[:, j] - muc[:, i])
+                A = (self._data[:, j] - muc[:, i])
+                B = (self._data[:, j] - muc[:, i])
+                sig[i, :, :] += self._prob[i, j] * (A * B.T)
 
         sigma = sig / self._num_data_points
 
