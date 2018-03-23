@@ -1,32 +1,50 @@
 import numpy as np
-from numpy import genfromtxt
-
-data = genfromtxt('data.csv', delimiter=',')
-k = 3
-data = data.T
-N = np.shape(data)[0]
-M = np.shape(data)[1]
-prob = np.random.rand(k, M)
 
 
-def init():
-    for i in range(M):
-        norm = sum(prob[:, i])
-        prob[:, i] /= norm
+# k = 3
+# prob = np.random.rand(k, M)
 
 
-def meancov2prob(param, prob):
-    pass
+class ExpectationMaximization:
 
+    def __init__(self, data):
+        self._data = data
 
-def estimation(param, prob):
-    meancov2prob()
-    init()
+        self._num_features = np.shape(self._data)[0]
+        self._num_data_points = np.shape(self._data)[1]
 
+        self._num_clusters = 0
 
-def maximization():
-    pi = np.mean(prob, axis=1)
-    muc = np.sum((prob * data), axis=1) / M
-    cov = np.sum((prob * (data - muc).T * (data - muc)))
+        self._prob = 0
 
-# print(N)
+    def calculate_clusters(self, num_clusters=0):
+        if num_clusters is not 0:
+            self._prob = self.normalize(np.random.rand(num_clusters, self._num_data_points))
+
+            shouldExit = False
+
+            while not shouldExit:
+                pass
+
+    def normalize(self, prob):
+
+        for column in range(self._num_data_points):
+            norm = sum(prob[:, column])
+            prob[:, column] /= norm
+
+        return prob
+
+    def meancov2prob(self, param, prob):
+
+        pass
+
+    def estimation(self, mu, prob):
+
+        pass
+
+    def maximization(self):
+        pi = np.mean(prob, axis=1)
+        muc = np.sum((prob * data), axis=1) / M
+        cov = np.sum((prob * (data - muc).T * (data - muc)))
+
+    # print(N)
