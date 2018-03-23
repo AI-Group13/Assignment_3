@@ -1,10 +1,12 @@
-import numpy as np
 import math
+
+import numpy as np
 
 # k = 3
 # prob = np.random.rand(k, M)
 
-pi = 22/7
+pi = 22 / 7
+
 
 class ExpectationMaximization:
 
@@ -16,16 +18,17 @@ class ExpectationMaximization:
 
         self._num_clusters = 0
 
-        self._prob = 0
+        self._prob = np.array([0, 0], [0, 0])
 
     def calculate_clusters(self, num_clusters=0):
         if num_clusters is not 0:
             self._prob = self.normalize(np.random.rand(num_clusters, self._num_data_points))
 
-            shouldExit = False
+            should_exit = False
 
-            while not shouldExit:
+            while not should_exit:
                 pass
+
     def normalize(self, prob):
         for column in range(self._num_data_points):
             norm = sum(prob[:, column])
@@ -33,6 +36,9 @@ class ExpectationMaximization:
         return prob
 
     def norm_pdf_multivariate(self, data, mu, sigma):
+        # for error referencing
+        result = -99
+
         size = len(self._data)
         for i in range(self._num_clusters):
             for j in range(self._num_data_points):
@@ -41,7 +47,7 @@ class ExpectationMaximization:
                     if det == 0:
                         raise NameError("The covariance matrix can't be singular")
 
-                    norm_const = 1.0/(np.power((2*pi), float(size)/2) * np.power(det, 1.0/2))
+                    norm_const = 1.0 / (np.power((2 * pi), float(size) / 2) * np.power(det, 1.0 / 2))
 
                     x_mu = data[:, j] - mu[i]
                     ainv = np.linalg.inv(sigma[i])
@@ -50,7 +56,7 @@ class ExpectationMaximization:
 
                 else:
                     raise NameError("The dimensions of the input don't match")
-        prob[:, j] =
+        # prob[:, j] =
         return result
 
     def maximization(self):
@@ -63,12 +69,8 @@ class ExpectationMaximization:
 
         return pic, muc, sigma
 
-
     def expectation(self, mu, prob, data, sigma, pic):
-        result = norm_pdf_multivariate(self., mu, sigma, prob)
+        result = self.norm_pdf_multivariate(mu, sigma, prob)
         prob = pic * prob
-        prob = normalize(prob)
-
-
-
-
+        prob = self.normalize(prob)
+        return prob
