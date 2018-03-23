@@ -53,24 +53,28 @@ class ExpectationMaximization:
                     ainv = np.linalg.inv(sigma[i])
                     result = np.power(math.e, -0.5 * (x_mu.T * ainv * x_mu))
                     result = norm_const * result
+                    prob[i, j] = result
 
                 else:
                     raise NameError("The dimensions of the input don't match")
         # prob[:, j] =
-        return result
+        return prob
 
-    def maximization(self):
+    def maximization(self, muc):
         pic = np.mean(self._prob, axis=1)
-
+        mu = 0
+        sig = 0
         for i in range(self._num_clusters):
             for j in range(self._num_data_points):
-                muc = np.sum((self._prob[i, j] * self._data[:, j])) / self._num_data_points
-                sigma = np.sum((self._prob[i, j] * (self._data[:, j] - muc[i]).T * (self._data[:, j] - muc[i])))
+                mu += self._prob[i, j] * self._data[:, j]
+                sig += self._prob[i, j] * (self._data[:, j] - muc[i]).T * (self._data[:, j] - muc[i])
+        muc = mu / self._num_data_points
+        sigma = sig / self._num_data_points
 
         return pic, muc, sigma
 
-    def expectation(self, mu, prob, data, sigma, pic):
-        result = self.norm_pdf_multivariate(mu, sigma, prob)
+    def expectation(self, mu, prob, sigma, pic):
+        prob = self.norm_pdf_multivariate(mu, sigma, prob)
         prob = pic * prob
         prob = self.normalize(prob)
         return prob
