@@ -23,7 +23,7 @@ class ExpectationMaximization:
 
         self._num_clusters = 0
 
-        self._prob = np.array([0, 0], [0, 0])
+        self._prob = np.array([[0, 0], [0, 0]])
 
     def normalize(self, prob):
         for column in range(self._num_data_points):
