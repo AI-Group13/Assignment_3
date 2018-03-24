@@ -1,5 +1,4 @@
 import math
-
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -29,13 +28,16 @@ class ExpectationMaximization:
 
     def do_em(self):
         self._prob = self.normalize(np.random.rand(self._num_clusters, self._num_data_points))
-
+        # muc = 30 * np.random.rand(2, 3)
+        # pic = np.random.rand(3, 1)
+        # sigma = 100 * np.random.rand(3, 2, 2)
         while True:
 
-            self._old_prob = self._prob
-
+            #self._old_prob = self._prob
             pic, muc, sigma = self.em_maximization()
             self.expectation(muc, sigma, pic)
+
+
 
             if self.prob_fitness_calc() > 50:
                 if self._show_plots:
@@ -56,15 +58,15 @@ class ExpectationMaximization:
         size = self._num_features
         for i in range(self._num_clusters):
             for j in range(self._num_data_points):
-                if (size, self._num_features) == mu.shape and (size, size) == sigma[i].shape:
-                    det = np.linalg.det(sigma[i])
+                if (size, self._num_clusters) == mu.shape and (size, size) == sigma[i, :, :].shape:
+                    det = np.linalg.det(sigma[i, :, :])
                     if det == 0:
                         raise NameError("The covariance matrix can't be singular")
 
                     norm_const = 1.0 / (np.power((2 * pi), float(size) / 2) * np.power(det, 1.0 / 2))
 
-                    x_mu = np.matrix(self._data[:, j] - mu[:,i])
-                    ainv = np.matrix(np.linalg.inv(sigma[i]))
+                    x_mu = np.matrix(self._data[:, j] - mu[:, i])
+                    ainv = np.matrix(np.linalg.inv(sigma[i, :, :]))
                     result = np.power(math.e, -0.5 * (x_mu * ainv * x_mu.T))
                     result = norm_const * result
                     self._prob[i, j] = result
@@ -76,6 +78,7 @@ class ExpectationMaximization:
 
     def em_maximization(self):
         pic = np.sum(self._prob, axis=1) / self._num_data_points
+        print(pic)
         mu = np.zeros([self._num_features, self._num_clusters])
         sig = np.zeros([self._num_clusters, self._num_features, self._num_features])
 
@@ -89,8 +92,7 @@ class ExpectationMaximization:
         for i in range(self._num_clusters):
             for j in range(self._num_data_points):
                 A = np.matrix(self._data[:, j] - muc[:, i])
-                B = np.matrix(self._data[:, j] - muc[:, i])
-                val = (A.T * B) * self._prob[i, j]
+                val = (A.T * A) * self._prob[i, j]
                 sig[i, :, :] += val
 
         sigma = sig / self._num_data_points
@@ -109,6 +111,7 @@ class ExpectationMaximization:
 
         # self._prob = pic * self._prob
         self._prob = self.normalize(self._prob)
+        print(self._prob)
 
     def hard_cluster(self):
         self._which_cluster = np.amax(self._prob, axis=1)
@@ -134,6 +137,6 @@ class ExpectationMaximization:
         plt.show()
 
     def prob_fitness_calc(self):
-        prob_diff = np.abs(self._old_prob) - np.abs(self._prob)
+        prob_diff = np.abs(self._old_prob - self._prob)
 
         return prob_diff.mean()
