@@ -1,4 +1,5 @@
 import math
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -33,11 +34,9 @@ class ExpectationMaximization:
         # sigma = 100 * np.random.rand(3, 2, 2)
         while True:
 
-            #self._old_prob = self._prob
+            # self._old_prob = self._prob
             pic, muc, sigma = self.em_maximization()
             self.expectation(muc, sigma, pic)
-
-
 
             if self.prob_fitness_calc() > 50:
                 if self._show_plots:
@@ -84,7 +83,6 @@ class ExpectationMaximization:
 
         for i in range(self._num_clusters):
             for j in range(self._num_data_points):
-
                 mu[:, i] += self._prob[i, j] * self._data[:, j]
 
         muc = mu / self._num_data_points
@@ -92,7 +90,7 @@ class ExpectationMaximization:
         for i in range(self._num_clusters):
             for j in range(self._num_data_points):
                 A = np.matrix(self._data[:, j] - muc[:, i])
-                val = (A.T * A) * self._prob[i, j]
+                val = (A.T * self._prob[i, j] * A)
                 sig[i, :, :] += val
 
         sigma = sig / self._num_data_points
