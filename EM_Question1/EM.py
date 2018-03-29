@@ -20,23 +20,37 @@ class ExpectationMaximization:
         self._show_plots = show_plots
 
         self._num_features = np.shape(self._data)[0]
+        # print ("Num features", self._num_features)
         self._num_data_points = np.shape(self._data)[1]
-
+        # print ("Num of points", self._num_data_points)
         self._num_clusters = int(num_clusters)
 
         self._prob = np.array([[0, 0], [0, 0]])
         self._old_prob = self._prob
 
+
     def do_em(self):
         self._prob = self.normalize(np.random.rand(self._num_clusters, self._num_data_points))
+        flag = 2
         # muc = 30 * np.random.rand(2, 3)
         # pic = np.random.rand(3, 1)
         # sigma = 100 * np.random.rand(3, 2, 2)
         while True:
 
-            # self._old_prob = self._prob
-            pic, muc, sigma = self.em_maximization()
+            self._old_prob = self._prob
+            pic, muc, sigma = self.em_maximization
             self.expectation(muc, sigma, pic)
+
+            for b in range(self._num_clusters):
+                for a in range(self._num_data_points):
+                    if self._prob[b,a] < 0.0000000000001:
+                        flag = 1
+
+            if flag ==1:
+                print("Values converged")
+                print (self._prob)
+                break
+
 
             if self.prob_fitness_calc() > 50:
                 if self._show_plots:
@@ -75,9 +89,10 @@ class ExpectationMaximization:
 
         return self._prob
 
+    @property
     def em_maximization(self):
         pic = np.sum(self._prob, axis=1) / self._num_data_points
-        print(pic)
+        print("Pic", pic)
         mu = np.zeros([self._num_features, self._num_clusters])
         sig = np.zeros([self._num_clusters, self._num_features, self._num_features])
 
@@ -86,6 +101,7 @@ class ExpectationMaximization:
                 mu[:, i] += self._prob[i, j] * self._data[:, j]
 
         muc = mu / self._num_data_points
+        print ("MUC", muc)
 
         for i in range(self._num_clusters):
             for j in range(self._num_data_points):
