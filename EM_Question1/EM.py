@@ -2,16 +2,11 @@ import math
 from scipy.stats import multivariate_normal
 import matplotlib.pyplot as plt
 import numpy as np
-
 from sklearn import datasets
-
-# k = 3
-# prob = np.random.rand(k, M)
 
 pi = 22 / 7
 
 colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'w']
-
 
 class ExpectationMaximization:
 
@@ -111,7 +106,6 @@ class ExpectationMaximization:
         for i in range(self._num_clusters):
             self._prob[i, :] *= pic[i]
 
-        # self._prob = pic * self._prob
         self._prob = self.normalize(self._prob)
         print(self._prob)
         return self._prob
