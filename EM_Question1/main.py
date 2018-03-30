@@ -14,12 +14,10 @@ if __name__ == '__main__':
     args = vars(parser.parse_args())
 
     data = genfromtxt(args['data_file'], delimiter=',').T
-    print (data)
+    print(data)
     show_plot = args['plot']
 
     em = EM.ExpectationMaximization(data, args['num_clusters'], show_plot)
-
-
 
     if args['num_clusters'] == 'X':
         # do EM Question 2
