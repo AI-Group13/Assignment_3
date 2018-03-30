@@ -68,7 +68,10 @@ class ExpectationMaximization:
         return matrix
 
     def log_liklihood(self):
-        for
+        log_liklihood = np.log(np.sum((self._prob * self._pic), axis=0))
+        log_liklihood = np.sum(log_liklihood)
+        print(log_liklihood)
+
     def maximization(self):
         pic = np.sum(self._prob, axis=1) / self._num_data_points
         sum_pic = np.sum(pic)
