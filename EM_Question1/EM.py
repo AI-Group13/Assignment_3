@@ -17,20 +17,21 @@ class ExpectationMaximization:
         self._num_features = np.shape(self._data)[0]
         self._num_data_points = np.shape(self._data)[1]
         self._num_clusters = int(num_clusters)
-        self._prob = np.array([[0, 0], [0, 0]])
+        self._prob = self.normalize(np.random.rand(self._num_clusters, self._num_data_points))
         self._old_prob = self._prob
 
     def do_em(self):
-        self._prob = self.normalize(np.random.rand(self._num_clusters, self._num_data_points))
+
         muc = 10 * np.random.rand(self._num_features, self._num_clusters)
-        print(muc)
+
         pic = np.random.rand(self._num_clusters, 1)
+
         sum_pic = np.sum(pic)
         for i in range(len(pic)):
             pic[i] = pic[i]/sum_pic
-        print("THis is pic", pic)
+
         sigma = np.random.rand(self._num_clusters, self._num_features, self._num_features)
-        print(sigma)
+
         for i in range(self._num_clusters):
             sigma[i, :, :] = 100*datasets.make_spd_matrix(self._num_features)
 
@@ -56,37 +57,38 @@ class ExpectationMaximization:
                     self.show_em_plots()
                 break
 
+    #Returns a normalized probability value
     def normalize(self, matrix):
         for column in range(self._num_data_points):
             norm = sum(matrix[:, column])
             matrix[:, column] /= norm
         return matrix
 
+    #Calculates the liklihood for a given probability matrix and responsibility matix
     def log_liklihood(self):
         log_liklihood = np.log(np.sum((self._prob * self._pic), axis=0))
         log_liklihood = np.sum(log_liklihood)
         print(log_liklihood)
 
     def maximization(self):
-        pic = np.sum(self._prob, axis=1) / self._num_data_points
+        pic = np.sum(self._prob, axis=1) / self._num_data_points                        #updating the  value of resposibility matrix
         sum_pic = np.sum(pic)
         for i in range(len(pic)):
             pic[i] = pic[i]/sum_pic
-        print("Pic", pic)
+
         mu = np.zeros([self._num_features, self._num_clusters])
         sig = np.zeros([self._num_clusters, self._num_features, self._num_features])
 
         for i in range(self._num_clusters):
             for j in range(self._num_data_points):
-                mu[:, i] += self._prob[i, j] * self._data[:, j]
+                mu[:, i] += self._prob[i, j] * self._data[:, j]                         #updating the value of mean
 
         muc = mu / self._num_data_points
-        print("MUC", muc)
 
         for i in range(self._num_clusters):
             for j in range(self._num_data_points):
                 A = np.matrix(self._data[:, j] - muc[:, i])
-                val = (A.T * self._prob[i, j] * A)
+                val = (A.T * self._prob[i, j] * A)                                      #updating the value of Sigma
                 sig[i, :, :] += val
 
         sigma = sig / self._num_data_points
@@ -100,13 +102,13 @@ class ExpectationMaximization:
     def expectation(self, mu, sigma, pic):
         for i in range(self._num_clusters):
             for j in range(self._num_data_points):
-                var = multivariate_normal(mu[:, i], sigma[i, :, :])
+                var = multivariate_normal(mu[:, i], sigma[i, :, :])                     #Calculating the probability matrix from the updated value
                 self._prob[i, j] = var.pdf(self._data[:, j])
 
         for i in range(self._num_clusters):
             self._prob[i, :] *= pic[i]
 
-        self._prob = self.normalize(self._prob)
+        self._prob = self.normalize(self._prob)                                         #Normalizing the updated the probability matrix
         print(self._prob)
         return self._prob
 
