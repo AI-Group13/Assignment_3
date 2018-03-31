@@ -110,6 +110,7 @@ class ExpectMaxmize():
         # # ttt = np.dot(((self.ClusData[:, 0].T*(self.given_data - self.mu[0, :]).T)), (self.given_data - self.mu[0, :]))
         # print ("temp", ttt)
         self.cov = [ np.dot(((self.ClusData[:, i].T*(self.given_data - self.mu[i, :]).T)), (self.given_data - self.mu[i, :]))/normalized_ClusData[i] for i in range(self.numClus)]
+        print("Updated Covariance Matrix \n", self.cov, "\n\n")
         self.cache_mu.append(self.mu)
         self.cache_var.append(self.cov)
         self.cache_probabilities.append(self.ClusResp)
