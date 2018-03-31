@@ -2,8 +2,13 @@ import argparse
 from numpy import genfromtxt
 import numpy as np
 from matplotlib import pyplot as plt
+import warnings
+import sys
 
 from expecMaximize import *
+
+if not sys.warnoptions:
+    warnings.simplefilter("ignore")
 
 if __name__ == '__main__':
 
@@ -34,7 +39,7 @@ if __name__ == '__main__':
 
         while True:
             em = ExpectMaxmize(data, i)
-            em.do_em_noBIC()
+            em.do_em()
             BIC = em.BIC()
             BIC_list.append(BIC)
             best_mu.append(em.cache_mu[-1])
@@ -62,12 +67,13 @@ if __name__ == '__main__':
         em = ExpectMaxmize(data, args['num_clusters'])
         # Defining restart value
         LogLik_cache = []
-        while em.restart_val < 1:
-            print("Random Restart no: ",em.restart_val+1)
-            em.do_em_noBIC()
+        while em.restart_val < 6:
+            print("Random Restart no: ",em.restart_val+1, "\n")
+            em.do_em()
             LogLik_cache.append(em.LLHD_array[-1])
             em.restart_val += 1
         em.plot_performance()
         em.plot_scatter()
         Aggregate_logLik = np.sum(LogLik_cache) / len(LogLik_cache)
-        print(Aggregate_logLik)
+
+        print(" \n \nAverage Log likelihood value after multiple random restarts", Aggregate_logLik, "\n")

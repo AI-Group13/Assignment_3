@@ -36,9 +36,9 @@ class ExpectMaxmize():
         self.first_mu = self.mu
         # Printing the initialized values for mean matrix of size: number of clusters X num of features
 
-        print ("Initialized Value of mean")
-        print ("Shape of Mean Matrix", np.shape(self.mu))
-        print (self.mu)
+        # print ("Initialized Value of mean")
+        # print ("Shape of Mean Matrix", np.shape(self.mu))
+        # print (self.mu)
 
         # Printing the initialized values for the covariance matrix of size: number of clusters X num of features X num of features
 
@@ -46,19 +46,19 @@ class ExpectMaxmize():
         self.cov = np.asarray([co_var * np.identity(np.shape(self.given_data)[1]) for i in range(self.numClus)])
         self.first_mu = self.cov
 
-        print ("Initialized Value of the Covariance Matrix")
-        print ("Shape of Covariance Matrix", np.shape(self.cov))
-        print (self.cov)
+        # print ("Initialized Value of the Covariance Matrix")
+        # print ("Shape of Covariance Matrix", np.shape(self.cov))
+        # print (self.cov)
 
         # Printing the initialized value for the Cluster Probability or Responsibility of size: num of clusters X 1
 
         self.ClusResp = (np.ones(self.numClus)/self.numClus)
 
-        print ("Initialized Value of Cluster Responsibility or Probability")
-        print (np.shape(self.ClusResp))
-        print (self.ClusResp)
+        # print ("Initialized Value of Cluster Responsibility or Probability")
+        # print (np.shape(self.ClusResp))
+        # print (self.ClusResp)
 
-        print ("\n\n ------------------------------------------- \n\n")
+        # print ("\n\n ------------------------------------------- \n\n")
 
     def calc_prob(self, meanMat, covariance, datapoints):
 
@@ -68,7 +68,7 @@ class ExpectMaxmize():
         v2 	= (datapoints - meanMat)
         prob = np.exp(-0.5*np.sum(v2*v1,axis=1))/(((2*np.pi**datapoints.shape[1])*np.linalg.det(covariance))**0.5)
 
-        print ("\n\nCalculated Probability \n", prob, "\n\n")
+        # print ("\n\nCalculated Probability \n", prob, "\n\n")
 
         return prob
 
@@ -76,7 +76,7 @@ class ExpectMaxmize():
 
     def Expectation(self):
 
-        print ("Expectation Step\n\n")
+        # print ("Expectation Step\n\n")
         self.DataClus = []
         for ii in range(self.numClus):
             temp1 = self.calc_prob(self.mu[ii], self.cov[ii], self.given_data)
@@ -91,33 +91,33 @@ class ExpectMaxmize():
 
     def Maximization(self):
 
-        print ("\n\nMaximization Step\n\n")
+        # print ("\n\nMaximization Step\n\n")
 
         normalized_ClusData = np.sum(self.ClusData, axis=0)
         # print(normalized_ClusData)
 
         # Updating the value of cluster probability or responsibility
         self.ClusResp = normalized_ClusData / np.shape(self.given_data)[0]
-        print ("Updated Cluster Probability \n", self.ClusResp, "\n\n" )
+        # print ("Updated Cluster Probability \n", self.ClusResp, "\n\n" )
 
         # Updating the Value of means
         mean_num = np.dot(self.ClusData.T, self.given_data)
         self.mu = mean_num / normalized_ClusData[:, np.newaxis]
-        print ("Updated Mean Matrix \n", self.mu, "\n\n")
+        # print ("Updated Mean Matrix \n", self.mu, "\n\n")
 
         # Updating the covariance matrix
 
         # # ttt = np.dot(((self.ClusData[:, 0].T*(self.given_data - self.mu[0, :]).T)), (self.given_data - self.mu[0, :]))
         # print ("temp", ttt)
         self.cov = [ np.dot(((self.ClusData[:, i].T*(self.given_data - self.mu[i, :]).T)), (self.given_data - self.mu[i, :]))/normalized_ClusData[i] for i in range(self.numClus)]
-        print("Updated Covariance Matrix \n", self.cov, "\n\n")
+        # print("Updated Covariance Matrix \n", self.cov, "\n\n")
         self.cache_mu.append(self.mu)
         self.cache_var.append(self.cov)
         self.cache_probabilities.append(self.ClusResp)
 
     def calc_LLHD(self):
 
-        print ("Calculating the loglikelihood \n")
+        # print ("Calculating the loglikelihood \n")
         temp = np.sum(np.log(np.sum((self.ClusResp)*(self.DataClus).T,axis=1)))
         return temp
 
@@ -155,7 +155,7 @@ class ExpectMaxmize():
         plt.show()
 
 
-    def do_em_noBIC(self):
+    def do_em(self):
 
         # Initializing the complete process
         self.initMean_Cov_ClusResp()
@@ -166,9 +166,7 @@ class ExpectMaxmize():
 
         iter_count = 0
 
-        #while  (LLHD_diff > self.tolerance):
-        #while (LLHD_diff > self.tolerance):
-        while (iter_count < 50):
+        while (LLHD_diff > self.tolerance):
             #print ("Running the complete EM process \n\n")
 
             # Running the expectation step
@@ -182,7 +180,7 @@ class ExpectMaxmize():
 
             # Calculating the new loglikelihood and appending it to the array
             self.current_LLHD = self.calc_LLHD()
-            #print ("Current Log likelihood", self.current_LLHD, "\n")
+            print ("Current Log likelihood", self.current_LLHD, "\n")
 
             self.LLHD_array.append(self.current_LLHD)
 
@@ -191,9 +189,10 @@ class ExpectMaxmize():
             #print ("Iteration Number: %d" %(iter_count), "\n")
 
             LLHD_diff = np.abs(self.temp_LLHD - self.current_LLHD)
-            print("Loglikelihood difference: ", LLHD_diff, "\n\n")
+            # print("Loglikelihood difference: ", LLHD_diff, "\n\n")
 
-
-
-
+        print ("Final Values of the Cluster Centers are  \n")
+        print("Final likelihood", self.current_LLHD, "\n\n")
+        print ("Final Mean Matrix \n", self.mu, "\n\n")
+        print ("Final CoVariance Matrix \n", self.cov, "\n\n" )
 
