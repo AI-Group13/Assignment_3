@@ -19,15 +19,21 @@ class ExpectMaxmize():
         self.LLHD_array = []
         self.temp_LLHD = 1
         self.current_LLHD = 0
-        self.tolerance = 0.1
+        self.tolerance = 0.01
+        self.cache_mu = []
+        self.cache_var = []
+        self.cache_probabilities = []
+        self.restart_val = 0
 
     def initMean_Cov_ClusResp(self):
 
-        ran = [ np.amax(self.given_data[:, i]) - np.amin(self.given_data[:, i]) for i in range(self.given_data.shape[1]) ]
+        self.numFea = np.shape(self.given_data)[1]
+        self.mu = []
+        ran = [np.random.choice(self.given_data[:, i]) for i in range(self.given_data.shape[1])]
         for p in range(self.numClus):
-            self.mu.append([ np.random.randint(0,int(a)) for a in ran])
+            self.mu.append([ np.random.randint(0,np.abs(int(a))+5) for a in ran])
         self.mu = np.asarray(self.mu)
-
+        self.first_mu = self.mu
         # Printing the initialized values for mean matrix of size: number of clusters X num of features
 
         print ("Initialized Value of mean")
@@ -36,8 +42,9 @@ class ExpectMaxmize():
 
         # Printing the initialized values for the covariance matrix of size: number of clusters X num of features X num of features
 
-        co_var = (np.max(self.given_data) - np.min(self.given_data)) / 2
+        co_var = np.abs((np.random.choice(self.given_data[:,0]) + np.random.choice(self.given_data[:,1])) / 2)
         self.cov = np.asarray([co_var * np.identity(np.shape(self.given_data)[1]) for i in range(self.numClus)])
+        self.first_mu = self.cov
 
         print ("Initialized Value of the Covariance Matrix")
         print ("Shape of Covariance Matrix", np.shape(self.cov))
@@ -103,6 +110,9 @@ class ExpectMaxmize():
         # # ttt = np.dot(((self.ClusData[:, 0].T*(self.given_data - self.mu[0, :]).T)), (self.given_data - self.mu[0, :]))
         # print ("temp", ttt)
         self.cov = [ np.dot(((self.ClusData[:, i].T*(self.given_data - self.mu[i, :]).T)), (self.given_data - self.mu[i, :]))/normalized_ClusData[i] for i in range(self.numClus)]
+        self.cache_mu.append(self.mu)
+        self.cache_var.append(self.cov)
+        self.cache_probabilities.append(self.ClusResp)
 
     def calc_LLHD(self):
 
@@ -110,12 +120,20 @@ class ExpectMaxmize():
         temp = np.sum(np.log(np.sum((self.ClusResp)*(self.DataClus).T,axis=1)))
         return temp
 
-    def  plot_performance(self):
+    def plot_performance(self):
 
         plt.plot(self.LLHD_array)
         plt.xlabel("Number of iterations")
         plt.ylabel("Log likelihood Value")
         plt.show()
+
+    def BIC(self):
+
+        BIC_Calc = -2 * self.LLHD_array[-1] + ((self.given_data.shape[1] * (self.given_data.shape[1] + 1) / 2 +
+                                            self.given_data.shape[1]) * self.numClus + self.numClus - 1) * np.log(self.given_data.shape[0])
+
+
+        return BIC_Calc
 
     def plot_scatter(self):
 
@@ -130,12 +148,11 @@ class ExpectMaxmize():
                 if cluster_selection[i] == k:
                     plt.scatter(self.given_data[i,0], self.given_data[i,1],color = colorsnn[k])
 
+        plt.title("Cluster visualization (Each colors are individual clusters)")
+        plt.xlabel("Attribute 1")
+        plt.ylabel("Attribute 2")
         plt.show()
 
-    def do_em_withBIC(self):
-
-        self.do_em_noBIC()
-        # 0000000000000000000000
 
     def do_em_noBIC(self):
 
@@ -144,13 +161,14 @@ class ExpectMaxmize():
 
         LLHD_diff = np.abs(self.temp_LLHD - self.current_LLHD)
 
-        print ("Loglikelihood difference: ", LLHD_diff, "\n\n")
+        #print ("Loglikelihood difference: ", LLHD_diff, "\n\n")
 
         iter_count = 0
 
-        while  (LLHD_diff > self.tolerance):
-
-            print ("Running the complete EM process \n\n")
+        #while  (LLHD_diff > self.tolerance):
+        #while (LLHD_diff > self.tolerance):
+        while (iter_count < 50):
+            #print ("Running the complete EM process \n\n")
 
             # Running the expectation step
             self.Expectation()
@@ -163,21 +181,16 @@ class ExpectMaxmize():
 
             # Calculating the new loglikelihood and appending it to the array
             self.current_LLHD = self.calc_LLHD()
-            print ("Current Log likelihood", self.current_LLHD, "\n")
+            #print ("Current Log likelihood", self.current_LLHD, "\n")
 
             self.LLHD_array.append(self.current_LLHD)
 
             # Counting the number of iterations
             iter_count +=1
-            print ("Iteration Number: %d" %(iter_count), "\n")
+            #print ("Iteration Number: %d" %(iter_count), "\n")
 
             LLHD_diff = np.abs(self.temp_LLHD - self.current_LLHD)
             print("Loglikelihood difference: ", LLHD_diff, "\n\n")
-
-        self.plot_performance()
-        self.plot_scatter()
-
-
 
 
 
